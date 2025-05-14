@@ -17,6 +17,13 @@ INPUT_SHAPE = [1, NUM_ROWS, NUM_COLS, 1]  # Static shape with batch size of 1
 OUTPUT_SHAPE = [NUM_CLASSES]  # Static shape for output (batch size of 1)
 FEATURES_SHAPE = [NUM_ROWS, NUM_COLS, 1]  # Single image shape (without batch)
 
+
+# Declare and create the directory for saving images
+IMG_DIR = "imgs/plot2/"
+if not os.path.exists(IMG_DIR):
+    os.makedirs(IMG_DIR)
+
+    
 def load_data():
     """Load MNIST dataset."""
     (x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
@@ -203,7 +210,7 @@ def test_comparison(self, test_images, test_labels, num_samples=10, use_mlir_app
         plt.title(f"Approx: {approx_pred}" + (" ✓" if approx_pred == true_label else " ✗"))
     
     plt.tight_layout()
-    plt.savefig("figure1.png")
+    plt.savefig(IMG_DIR + "figure1.png")
     plt.show()
     
     # Print results
@@ -483,7 +490,7 @@ def run_post_training_and_plot(exact_model_module, approx_model_module,
 
     plt.title('Post-Training: Normalized Avg. Loss and Avg. Time per Epoch')
     fig.tight_layout()
-    plt.savefig("plot_post_training_normalized_loss_time_insight2.png")
+    plt.savefig(IMG_DIR + "plot_post_training_normalized_loss_time_insight2.png")
     plt.show()
     print("Plot for Insight 2 (post-training normalized loss and time) saved as plot_post_training_normalized_loss_time_insight2.png")
 

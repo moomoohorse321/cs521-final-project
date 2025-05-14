@@ -17,6 +17,13 @@ INPUT_SHAPE = [1, NUM_ROWS, NUM_COLS, 1]  # Static shape with batch size of 1
 OUTPUT_SHAPE = [NUM_CLASSES]  # Static shape for output (batch size of 1)
 FEATURES_SHAPE = [NUM_ROWS, NUM_COLS, 1]  # Single image shape (without batch)
 
+
+# Declare and create the directory for saving images
+IMG_DIR = "imgs/plot3/"
+if not os.path.exists(IMG_DIR):
+    os.makedirs(IMG_DIR)
+
+
 def load_data():
     """Load MNIST dataset."""
     (x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
@@ -174,7 +181,7 @@ def test_comparison(self, test_images, test_labels, num_samples=10, use_mlir_app
         plt.title(f"Approx: {approx_pred}" + (" ✓" if approx_pred == true_label else " ✗"))
     
     plt.tight_layout()
-    plt.savefig("figure1.png")
+    plt.savefig(IMG_DIR + "figure1.png")
     plt.show()
     
     # Print results
@@ -216,15 +223,15 @@ def test():
     exact_module_path = "mnist_exact_model"
     (x_train, y_train, y_train_onehot), (x_test, y_test, y_test_onehot) = load_data()
     
-    # # Create and train the exact MNIST module
-    # exact_module = create_mnist_module(BATCH_SIZE)
-    # print("Training the exact model...")
-    # exact_module = train_exact_module(exact_module, (x_train, y_train, y_train_onehot), epochs=5)
-    # print("Exact model training complete.")
+    # Create and train the exact MNIST module
+    exact_module = create_mnist_module(BATCH_SIZE)
+    print("Training the exact model...")
+    exact_module = train_exact_module(exact_module, (x_train, y_train, y_train_onehot), epochs=5)
+    print("Exact model training complete.")
     
-    # # # save it to .pth
-    # tf.saved_model.save(exact_module, exact_module_path)
-    # print(f"Exact model saved to {exact_module_path}")
+    # # save it to .pth
+    tf.saved_model.save(exact_module, exact_module_path)
+    print(f"Exact model saved to {exact_module_path}")
     
     # load it back
     exact_module = tf.saved_model.load(exact_module_path)
@@ -301,4 +308,5 @@ def test_load(load_mlir_path = os.path.join(parent_dir_path, "bin", "output.mlir
     
 
 if __name__ == "__main__":
-    test_load()
+    # test_load()
+    test()

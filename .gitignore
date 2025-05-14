@@ -3,3 +3,5 @@ python/mnist_exact_model/
 python/*.mlir
 python/*.mlirbc
 python/*.png
+
+.venv

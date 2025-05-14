@@ -8,6 +8,7 @@ from iree import runtime as ireert
 from iree.compiler import compile_str
 from substitute import FuncSubstitute, get_approx_kernel
 import time
+import os
 
 # Configuration for our MNIST model
 NUM_CLASSES = 10
@@ -16,6 +17,11 @@ BATCH_SIZE = 32
 INPUT_SHAPE = [1, NUM_ROWS, NUM_COLS, 1]  # Static shape with batch size of 1
 OUTPUT_SHAPE = [NUM_CLASSES]  # Static shape for output (batch size of 1)
 FEATURES_SHAPE = [NUM_ROWS, NUM_COLS, 1]  # Single image shape (without batch)
+
+# Declare and create the directory for saving images
+IMG_DIR = "imgs/plot1/"
+if not os.path.exists(IMG_DIR):
+    os.makedirs(IMG_DIR)
 
 def load_data():
     """Load MNIST dataset."""
@@ -174,7 +180,7 @@ def test_comparison(self, test_images, test_labels, num_samples=10, use_mlir_app
         plt.title(f"Approx: {approx_pred}" + (" ✓" if approx_pred == true_label else " ✗"))
     
     plt.tight_layout()
-    plt.savefig("figure1.png")
+    plt.savefig(IMG_DIR + "figure1.png")
     plt.show()
     
     # Print results
@@ -322,7 +328,7 @@ def test_comparison_modified(self, test_images, test_labels, num_samples_to_plot
             plt.title(f"Approx: {approx_pred}" + (" ✓" if approx_pred == true_label else " ✗"))
         
         plt.tight_layout()
-        plt.savefig("figure_sample_comparison.png")
+        plt.savefig(IMG_DIR + "figure_sample_comparison.png")
         plt.show()
         
         if num_samples_to_plot > 0:
@@ -502,7 +508,7 @@ def run_insight1_experiments():
     ax2.legend(lines + lines2, labels + labels2, loc='center right') # Adjust location as needed, e.g., 'best', 'upper left'
 
     fig.tight_layout() # Adjust layout to prevent labels from overlapping
-    plt.savefig("plot_accuracy_drop_and_training_time_vs_samples.png")
+    plt.savefig(IMG_DIR + "plot_accuracy_drop_and_training_time_vs_samples.png")
     plt.show()
     print("Plot for Experiment 1 saved as plot_accuracy_drop_and_training_time_vs_samples.png")
 
@@ -541,7 +547,7 @@ def run_insight1_experiments():
     plt.xlabel('Number of Epochs')
     plt.ylabel('Accuracy Drop (%) [(Exact - Approx) / Exact * 100]')
     plt.grid(True)
-    plt.savefig("plot_accuracy_drop_vs_epochs.png")
+    plt.savefig(IMG_DIR + "plot_accuracy_drop_vs_epochs.png")
     print("Plot for Experiment 2 saved as plot_accuracy_drop_vs_epochs.png")
 
 

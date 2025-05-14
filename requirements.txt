@@ -1,0 +1,5 @@
+iree-base-compiler==3.3.0
+iree-base-runtime==3.3.0
+iree-tools-tf==20250320.1206
+tensorflow[and-cuda] 
+matplotlib

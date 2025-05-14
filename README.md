@@ -9,6 +9,11 @@ The testing suite is completely independent (modular building block) to the pare
 
 
 ## Building the testing suite
+
+### System Requirements
+- Python 3.9–3.12
+- pip (version 19.0 or higher for Linux (requires manylinux2014 support) and Windows. pip version 20.3 or higher for macOS)
+
 You should first install `IREE` in your environment.
 
 ```bash
