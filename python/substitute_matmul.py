@@ -1,13 +1,5 @@
-# import iree.compiler.tf
-# import iree.runtime
-# import tensorflow as tf
-# import numpy as np
-# from matplotlib import pyplot as plt
-# from iree.tf.support import module_utils
-# from iree import runtime as ireert
-# from iree.compiler import compile_str
-# from substitute import FuncSubstitute, get_approx_kernel
-
+import iree.compiler.tf
+import tensorflow as tf
 import numpy as np
 
 A = 4
@@ -27,11 +19,12 @@ def create_matmul_module():
         @tf.function(input_signature=[tf.TensorSpec(shape=(A, B), dtype=tf.float32),
                                         tf.TensorSpec(shape=(B, C), dtype=tf.float32)])
         def basic_matmul(self, lhs, rhs):
-            res = np.zeros((A, C), dtype=np.float32)
+            res = tf.zeros((A, C), dtype=tf.float32)
+
             for i in range(A):
                 for j in range(C):
                     for k in range(B):
-                        res[i][j] += lhs[i][k] * rhs[k][j]
+                        res += lhs[i, k] * rhs[k, j]
             return res
 
     return MatMulModule()
@@ -39,25 +32,25 @@ def create_matmul_module():
 
 def test_exact_matmul():
     module = create_matmul_module()
-    compiled_module = iree.compiler.tf.compile_module(module.basic_matmul, target_backends=["dylib"])
-    compiled_module = module_utils.load_module(compiled_module)
-    compiled_module.basic_matmul(SAMPLE_LHS, SAMPLE_RHS)
+    save_path = "mlirbs_temp/matmul_module.mlirbc"
+
+    print("Saving module to SavedModel...")
+    tf.saved_model.save(module, save_path)
+
+    # TODO: without saving and loading like this, get the error
+    # AttributeError: '_SignatureMap' object has no attribute 'name'
+    print("Compiling og matmul module...")
+    mlir_bc = iree.compiler.tf.compile_saved_model(
+        save_path,
+        target_backends=["llvm-cpu"],
+        input_type="savedmodel",
+        import_only=True
+    )
+    print("Compiling og matmul module done.")
+    print(mlir_bc)
 
 
-# TODO remove
-def basic_matmul(lhs, rhs):
-    res = np.zeros((A, C), dtype=np.float32)
-    for i in range(A):
-        for j in range(C):
-            for k in range(B):
-                res[i][j] += lhs[i][k] * rhs[k][j]
-    return res
 
 if __name__ == "__main__":
-    # test_exact_matmul()
-
-    # test basic matmul
-    res = basic_matmul(SAMPLE_LHS, SAMPLE_RHS)
-    predicted_res = np.matmul(SAMPLE_LHS, SAMPLE_RHS)
-    assert np.allclose(res, predicted_res), "Basic matmul failed"
-    print("Basic matmul passed")
+    print("-------------------------------------------------")
+    test_exact_matmul()
