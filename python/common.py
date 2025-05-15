@@ -29,6 +29,44 @@ def create_mnist_model():
     ])
     return model
 
+
+# Wrap the model in a tf.Module to compile it with IREE
+def create_mnist_module(batch_size=BATCH_SIZE):
+    class MNISTModule(tf.Module):
+        def __init__(self):
+            super(MNISTModule, self).__init__()
+            self.model = create_mnist_model()
+            
+            # Compile the model
+            self.model.compile(
+                optimizer='adam',
+                loss=tf.keras.losses.KLDivergence(),
+                metrics=['accuracy']
+            )
+
+        @tf.function(input_signature=[tf.TensorSpec(FEATURES_SHAPE, tf.float32)])
+        def predict(self, x):
+            """Exact prediction function for MNIST. (non-batched)"""
+            batched_x = tf.expand_dims(x, 0)  # Add batch dimension
+            batched_res = self.model(batched_x, training=False)
+            return tf.squeeze(batched_res, 0)  # Remove batch dimension for output
+        
+        @tf.function(input_signature=[
+            tf.TensorSpec([batch_size] + FEATURES_SHAPE, tf.float32),
+            tf.TensorSpec([batch_size, NUM_CLASSES], tf.float32)  # One-hot encoded labels
+        ])
+        def learn(self, x, y):
+            """Train the model on batched data."""
+            with tf.GradientTape() as tape:
+                predictions = self.model(x, training=True)
+                loss = tf.keras.losses.KLDivergence()(y, predictions)
+            gradients = tape.gradient(loss, self.model.trainable_variables)
+            self.model.optimizer.apply_gradients(zip(gradients, self.model.trainable_variables))
+            
+            return loss
+        
+    return MNISTModule()
+
 def load_data():
     """Load MNIST dataset."""
     (x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
