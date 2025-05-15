@@ -17,9 +17,10 @@ Refer to this [iree versions](https://iree.dev/developers/general/release-manage
 pip install iree-base-compiler==3.3.0
 pip install iree-base-runtime==3.3.0
 pip install iree-tools-tf==20250320.1206
+pip install -r ./requirements.txt
 ```
 
-The binaries (`bin/replace`, `bin/merge`, `bin/approx-opt`) are pre-built (for x86 linux).
+The binaries (`bin/replace`, `bin/merge`, `bin/approx-opt`) are pre-built (for x86 linux), if you want to built them from the source, please refer to the next section.
 
 ### I want to build from the source
 
