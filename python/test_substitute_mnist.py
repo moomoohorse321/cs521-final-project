@@ -8,7 +8,7 @@ from iree import runtime as ireert
 from iree.compiler import compile_str
 from substitute import FuncSubstitute, get_approx_kernel
 
-from common import load_data, test_load, create_mnist_model
+from common import load_data, test_load, create_mnist_module, train_exact_module
 
 # Configuration for our MNIST model
 NUM_CLASSES = 10
@@ -19,72 +19,6 @@ OUTPUT_SHAPE = [NUM_CLASSES]  # Static shape for output (batch size of 1)
 FEATURES_SHAPE = [NUM_ROWS, NUM_COLS, 1]  # Single image shape (without batch)
 
 
-# Wrap the model in a tf.Module to compile it with IREE
-def create_mnist_module(batch_size=BATCH_SIZE):
-    class MNISTModule(tf.Module):
-        def __init__(self):
-            super(MNISTModule, self).__init__()
-            self.model = create_mnist_model()
-            
-            # Compile the model
-            self.model.compile(
-                optimizer='adam',
-                loss=tf.keras.losses.KLDivergence(),
-                metrics=['accuracy']
-            )
-
-        @tf.function(input_signature=[tf.TensorSpec(FEATURES_SHAPE, tf.float32)])
-        def predict(self, x):
-            """Exact prediction function for MNIST. (non-batched)"""
-            batched_x = tf.expand_dims(x, 0)  # Add batch dimension
-            batched_res = self.model(batched_x, training=False)
-            return tf.squeeze(batched_res, 0)  # Remove batch dimension for output
-        
-        @tf.function(input_signature=[
-            tf.TensorSpec([batch_size] + FEATURES_SHAPE, tf.float32),
-            tf.TensorSpec([batch_size, NUM_CLASSES], tf.float32)  # One-hot encoded labels
-        ])
-        def learn(self, x, y):
-            """Train the model on batched data."""
-            with tf.GradientTape() as tape:
-                predictions = self.model(x, training=True)
-                loss = tf.keras.losses.KLDivergence()(y, predictions)
-            gradients = tape.gradient(loss, self.model.trainable_variables)
-            self.model.optimizer.apply_gradients(zip(gradients, self.model.trainable_variables))
-            
-            return loss
-        
-    return MNISTModule()
-
-def train_exact_module(model, data, epochs=5):
-    """Train the trainable model on MNIST data with real-time line updates."""
-    (x_train, y_train, y_train_onehot) = data
-    
-    # Set up training loop
-    steps_per_epoch = len(x_train) // BATCH_SIZE
-    
-    for epoch in range(epochs):
-        epoch_loss = 0.0
-        for step in range(steps_per_epoch):
-            # Get batch
-            batch_start = step * BATCH_SIZE
-            batch_end = batch_start + BATCH_SIZE
-            x_batch = x_train[batch_start:batch_end]
-            y_batch = y_train_onehot[batch_start:batch_end] 
-            
-            # Perform one training step
-            step_loss = model.learn(x_batch, y_batch)
-            epoch_loss += step_loss
-            
-            # Update progress line (overwrites previous line)
-            if step % 10 == 0:
-                print(f"\rEpoch {epoch+1}/{epochs}, Step {step}/{steps_per_epoch}", end="")
-        
-        # Print epoch summary (overwrites previous line)
-        print(f"\rEpoch {epoch+1}/{epochs} complete, Average Loss: {epoch_loss / steps_per_epoch}", end="")
-    print("\nTraining complete.")
-    
-    return model
 
 def test_comparison(self, test_images, test_labels, num_samples=10, use_mlir_approx=True):
     """

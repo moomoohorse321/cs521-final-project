@@ -9,7 +9,7 @@ from iree.compiler import compile_str
 from substitute import FuncSubstitute, get_approx_kernel
 import time
 
-from common import load_data, create_mnist_module
+from common import load_data, create_mnist_module, train_exact_module
 
 # Configuration for our MNIST model
 NUM_CLASSES = 10
@@ -19,36 +19,6 @@ INPUT_SHAPE = [1, NUM_ROWS, NUM_COLS, 1]  # Static shape with batch size of 1
 OUTPUT_SHAPE = [NUM_CLASSES]  # Static shape for output (batch size of 1)
 FEATURES_SHAPE = [NUM_ROWS, NUM_COLS, 1]  # Single image shape (without batch)
 
-
-def train_exact_module(model, data, epochs=5):
-    """Train the trainable model on MNIST data with real-time line updates."""
-    (x_train, y_train, y_train_onehot) = data
-    
-    # Set up training loop
-    steps_per_epoch = len(x_train) // BATCH_SIZE
-    
-    for epoch in range(epochs):
-        epoch_loss = 0.0
-        for step in range(steps_per_epoch):
-            # Get batch
-            batch_start = step * BATCH_SIZE
-            batch_end = batch_start + BATCH_SIZE
-            x_batch = x_train[batch_start:batch_end]
-            y_batch = y_train_onehot[batch_start:batch_end] 
-            
-            # Perform one training step
-            step_loss = model.learn(x_batch, y_batch)
-            epoch_loss += step_loss
-            
-            # Update progress line (overwrites previous line)
-            if step % 10 == 0:
-                print(f"\rEpoch {epoch+1}/{epochs}, Step {step}/{steps_per_epoch}", end="")
-        
-        # Print epoch summary (overwrites previous line)
-        print(f"\rEpoch {epoch+1}/{epochs} complete, Average Loss: {epoch_loss / steps_per_epoch}", end="")
-    print("\nTraining complete.")
-    
-    return model
 
 def test_comparison(self, test_images, test_labels, num_samples=10, use_mlir_approx=True):
     """
