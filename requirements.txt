@@ -1,0 +1,7 @@
+iree_base_compiler==3.3.0
+iree_base_runtime==3.3.0
+iree_tools_tf==20250320.1206
+iree_turbine==3.3.0
+matplotlib==3.10.3
+numpy==2.2.5
+tensorflow==2.19.0
