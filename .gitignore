@@ -6,3 +6,5 @@ python/*.mlirbc
 python/*.png
 
 .venv/
+venv/
+bin/*.mlir
