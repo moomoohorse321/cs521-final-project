@@ -394,9 +394,19 @@ def run_insight1_experiments():
     (x_train, y_train, y_train_onehot), (x_test, y_test, y_test_onehot) = load_data()
     
     exact_module_path = "mnist_exact_model"
-    
-    exact_module = tf.saved_model.load(exact_module_path)
-    print("Exact model loaded from saved file.")
+    try:
+        exact_module = tf.saved_model.load(exact_module_path)
+        print("Exact model loaded from saved file.")
+    except Exception as e:
+        # Create and train the exact MNIST module
+        exact_module = create_mnist_module(BATCH_SIZE)
+        print("Training the exact model...")
+        exact_module = train_exact_module(exact_module, (x_train, y_train, y_train_onehot), epochs=5)
+        print("Exact model training complete.")
+        
+        # # save it to .pth
+        tf.saved_model.save(exact_module, exact_module_path)
+        print(f"Exact model saved to {exact_module_path}")
 
     temp_approx_kernel_for_exact_eval = get_approx_kernel(FEATURES_SHAPE, OUTPUT_SHAPE, BATCH_SIZE)
     temp_func_sub_for_exact = FuncSubstitute(
