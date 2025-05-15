@@ -1,11 +1,5 @@
 # approxMLIR-IREE testing suite
 
-The testing suite is completely independent (modular building block) to the parent project. The way of testing is 
-* generate the MLIR file from any front-ends / compile mlir using this tesing suite
-* optimize it using the parent project
-* pass the mlir file to the current testing suite
-* load and run it using IREE runtime
-
 
 
 ## Building the testing suite
@@ -23,15 +17,26 @@ pip install iree-base-runtime==3.3.0
 pip install iree-tools-tf==20250320.1206
 ```
 
+The binaries (`bin/replace`, `bin/merge`, `bin/approx-opt`) are pre-built (for x86 linux).
+
+### I want to build from the source
+
+Okay. For `bin/replace` and `bin/merge`, you can just go to bin and make them (because their source files are in them).
+
+For `bin/approx-opt`, you need to build it from the source using this link https://github.com/moomoohorse321/approxMLIR. 
+
+You must checkout to the `llvm2024` branch and follow the instruction in the `README.md` to build it.
+
+All of these steps are only necessary if you want to build the binaries from the source.
+
 ## Run the test
-The `substitute` provide a run-time library for you to do function substitution.
 
-Your approximate app should use such library, to approximte, substitute, compile and run the app. 
-
-One application that replaces the DNN + MNIST is here
 ```bash
-python3 test_substitute_mnist.py
+cd python
+# run the first plot (Figure 6)
+python3 verification.py
+# run the second plot (Figure 4)
+python3 plot1.py
+# run the third plot (Figure 5)
+python3 plot2.py
 ```
-
-Write your own application by following the example in `test_substitute_mnist.py`.
-
