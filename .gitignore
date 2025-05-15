@@ -1,5 +1,8 @@
 python/__pycache__/
 python/mnist_exact_model/
 python/*.mlir
+python/*.mlir.tmp
 python/*.mlirbc
 python/*.png
+
+.venv/

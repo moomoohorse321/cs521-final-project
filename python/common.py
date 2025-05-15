@@ -1,16 +1,10 @@
-import iree.compiler.tf
-import iree.runtime
+import os
 import tensorflow as tf
 import numpy as np
-from matplotlib import pyplot as plt
-from iree.tf.support import module_utils
-from iree import runtime as ireert
-from iree.compiler import compile_str
+import matplotlib.pyplot as plt
 from substitute import FuncSubstitute, get_approx_kernel
 
-from common import load_data, test_load, create_mnist_module, train_exact_module
-
-# Configuration for our MNIST model
+# TODO sort correctly to not be copied w common and other scripts# Configuration for our MNIST model
 NUM_CLASSES = 10
 NUM_ROWS, NUM_COLS = 28, 28
 BATCH_SIZE = 32
@@ -18,6 +12,109 @@ INPUT_SHAPE = [1, NUM_ROWS, NUM_COLS, 1]  # Static shape with batch size of 1
 OUTPUT_SHAPE = [NUM_CLASSES]  # Static shape for output (batch size of 1)
 FEATURES_SHAPE = [NUM_ROWS, NUM_COLS, 1]  # Single image shape (without batch)
 
+
+parent_dir_path = os.path.dirname(os.path.abspath(__file__))
+
+
+# Create a CNN model for MNIST digit recognition (this is our "exact" model)
+def create_mnist_model():
+    model = tf.keras.Sequential([
+        tf.keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=FEATURES_SHAPE),
+        tf.keras.layers.MaxPooling2D((2, 2)),
+        tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),
+        tf.keras.layers.MaxPooling2D((2, 2)),
+        tf.keras.layers.Flatten(),
+        tf.keras.layers.Dense(512, activation='relu'),
+        tf.keras.layers.Dense(NUM_CLASSES, activation='softmax')
+    ])
+    return model
+
+
+# Wrap the model in a tf.Module to compile it with IREE
+def create_mnist_module(batch_size=BATCH_SIZE):
+    class MNISTModule(tf.Module):
+        def __init__(self):
+            super(MNISTModule, self).__init__()
+            self.model = create_mnist_model()
+            
+            # Compile the model
+            self.model.compile(
+                optimizer='adam',
+                loss=tf.keras.losses.KLDivergence(),
+                metrics=['accuracy']
+            )
+
+        @tf.function(input_signature=[tf.TensorSpec(FEATURES_SHAPE, tf.float32)])
+        def predict(self, x):
+            """Exact prediction function for MNIST. (non-batched)"""
+            batched_x = tf.expand_dims(x, 0)  # Add batch dimension
+            batched_res = self.model(batched_x, training=False)
+            return tf.squeeze(batched_res, 0)  # Remove batch dimension for output
+        
+        @tf.function(input_signature=[
+            tf.TensorSpec([batch_size] + FEATURES_SHAPE, tf.float32),
+            tf.TensorSpec([batch_size, NUM_CLASSES], tf.float32)  # One-hot encoded labels
+        ])
+        def learn(self, x, y):
+            """Train the model on batched data."""
+            with tf.GradientTape() as tape:
+                predictions = self.model(x, training=True)
+                loss = tf.keras.losses.KLDivergence()(y, predictions)
+            gradients = tape.gradient(loss, self.model.trainable_variables)
+            self.model.optimizer.apply_gradients(zip(gradients, self.model.trainable_variables))
+            
+            return loss
+        
+    return MNISTModule()
+
+
+def train_exact_module(model, data, epochs=5):
+    """Train the trainable model on MNIST data with real-time line updates."""
+    (x_train, y_train, y_train_onehot) = data
+    
+    # Set up training loop
+    steps_per_epoch = len(x_train) // BATCH_SIZE
+    
+    for epoch in range(epochs):
+        epoch_loss = 0.0
+        for step in range(steps_per_epoch):
+            # Get batch
+            batch_start = step * BATCH_SIZE
+            batch_end = batch_start + BATCH_SIZE
+            x_batch = x_train[batch_start:batch_end]
+            y_batch = y_train_onehot[batch_start:batch_end] 
+            
+            # Perform one training step
+            step_loss = model.learn(x_batch, y_batch)
+            epoch_loss += step_loss
+            
+            # Update progress line (overwrites previous line)
+            if step % 10 == 0:
+                print(f"\rEpoch {epoch+1}/{epochs}, Step {step}/{steps_per_epoch}", end="")
+        
+        # Print epoch summary (overwrites previous line)
+        print(f"\rEpoch {epoch+1}/{epochs} complete, Average Loss: {epoch_loss / steps_per_epoch}", end="")
+    print("\nTraining complete.")
+    
+    return model
+
+def load_data():
+    """Load MNIST dataset."""
+    (x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
+
+    # Reshape into grayscale images
+    x_train = np.reshape(x_train, (-1, NUM_ROWS, NUM_COLS, 1))
+    x_test = np.reshape(x_test, (-1, NUM_ROWS, NUM_COLS, 1))
+
+    # Rescale pixel values to [0, 1]
+    x_train = x_train.astype(np.float32) / 255
+    x_test = x_test.astype(np.float32) / 255
+
+    # Convert labels to one-hot encoding for the classifier
+    y_train_onehot = tf.keras.utils.to_categorical(y_train, NUM_CLASSES)
+    y_test_onehot = tf.keras.utils.to_categorical(y_test, NUM_CLASSES)
+
+    return (x_train, y_train, y_train_onehot), (x_test, y_test, y_test_onehot)
 
 
 def test_comparison(self, test_images, test_labels, num_samples=10, use_mlir_approx=True):
@@ -116,6 +213,35 @@ def test_comparison(self, test_images, test_labels, num_samples=10, use_mlir_app
     print(f"\nFull Test Set - Exact Model Accuracy: {exact_correct / len(test_images):.4f}")
     print(f"Full Test Set - Approximate Model Accuracy: {approx_correct / len(test_images):.4f}")
 
+
+def test_load(load_mlir_path = os.path.join(parent_dir_path, "../bin", "output.mlir")):
+    (x_train, y_train, y_train_onehot), (x_test, y_test, y_test_onehot) = load_data()
+    
+    exact_module_path = "mnist_exact_model"
+    # load it back
+    exact_module = tf.saved_model.load(exact_module_path)
+    print("Exact model loaded from saved file.")
+    
+    # Test constructing an approximate kernel
+    print("Creating approximation kernel...")
+    test_kernel = get_approx_kernel(FEATURES_SHAPE, OUTPUT_SHAPE, BATCH_SIZE)
+    print("Successfully created approximation kernel")
+    
+    # Create the function substitution handler
+    func_sub = FuncSubstitute(
+        exact_module=exact_module,
+        approx_kernel=FuncSubstitute.load_mlir_from_file(load_mlir_path),
+        input_shape=FEATURES_SHAPE,
+        batch_size=BATCH_SIZE
+    )
+    
+    func_sub.test_comparison = test_comparison.__get__(func_sub)
+    
+    func_sub.test_comparison(
+        x_test, y_test, num_samples=10
+    )
+
+
 def test():
     # Load MNIST data
     exact_module_path = "mnist_exact_model"
@@ -173,7 +299,3 @@ def test():
     print(f"MLIR bytecode saved to: {mlir_path}")
     
     return exact_module, func_sub
-    
-
-if __name__ == "__main__":
-    test()
