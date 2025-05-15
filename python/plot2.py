@@ -9,7 +9,7 @@ from iree.compiler import compile_str
 from substitute import FuncSubstitute, get_approx_kernel
 import time, os
 
-from common import load_data
+from common import load_data, create_mnist_model
 
 # Configuration for our MNIST model
 NUM_CLASSES = 10
@@ -18,19 +18,6 @@ BATCH_SIZE = 32
 INPUT_SHAPE = [1, NUM_ROWS, NUM_COLS, 1]  # Static shape with batch size of 1
 OUTPUT_SHAPE = [NUM_CLASSES]  # Static shape for output (batch size of 1)
 FEATURES_SHAPE = [NUM_ROWS, NUM_COLS, 1]  # Single image shape (without batch)
-
-# Create a CNN model for MNIST digit recognition (this is our "exact" model)
-def create_mnist_model():
-    model = tf.keras.Sequential([
-        tf.keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=FEATURES_SHAPE),
-        tf.keras.layers.MaxPooling2D((2, 2)),
-        tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),
-        tf.keras.layers.MaxPooling2D((2, 2)),
-        tf.keras.layers.Flatten(),
-        tf.keras.layers.Dense(512, activation='relu'),
-        tf.keras.layers.Dense(NUM_CLASSES, activation='softmax')
-    ])
-    return model
 
 # Wrap the model in a tf.Module to compile it with IREE
 def create_mnist_module(batch_size=BATCH_SIZE):

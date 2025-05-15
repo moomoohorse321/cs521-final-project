@@ -8,7 +8,7 @@ from iree import runtime as ireert
 from iree.compiler import compile_str
 from substitute import FuncSubstitute, get_approx_kernel
 
-from common import load_data, test_load
+from common import load_data, test_load, create_mnist_model
 
 # Configuration for our MNIST model
 NUM_CLASSES = 10
@@ -18,19 +18,6 @@ INPUT_SHAPE = [1, NUM_ROWS, NUM_COLS, 1]  # Static shape with batch size of 1
 OUTPUT_SHAPE = [NUM_CLASSES]  # Static shape for output (batch size of 1)
 FEATURES_SHAPE = [NUM_ROWS, NUM_COLS, 1]  # Single image shape (without batch)
 
-
-# Create a CNN model for MNIST digit recognition (this is our "exact" model)
-def create_mnist_model():
-    model = tf.keras.Sequential([
-        tf.keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=FEATURES_SHAPE),
-        tf.keras.layers.MaxPooling2D((2, 2)),
-        tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),
-        tf.keras.layers.MaxPooling2D((2, 2)),
-        tf.keras.layers.Flatten(),
-        tf.keras.layers.Dense(512, activation='relu'),
-        tf.keras.layers.Dense(NUM_CLASSES, activation='softmax')
-    ])
-    return model
 
 # Wrap the model in a tf.Module to compile it with IREE
 def create_mnist_module(batch_size=BATCH_SIZE):
@@ -252,34 +239,6 @@ def test():
     print(f"MLIR bytecode saved to: {mlir_path}")
     
     return exact_module, func_sub
-
-def test_load():
-    (x_train, y_train, y_train_onehot), (x_test, y_test, y_test_onehot) = load_data()
-    
-    exact_module_path = "mnist_exact_model"
-    # load it back
-    exact_module = tf.saved_model.load(exact_module_path)
-    print("Exact model loaded from saved file.")
-    
-    # Test constructing an approximate kernel
-    print("Creating approximation kernel...")
-    test_kernel = get_approx_kernel(FEATURES_SHAPE, OUTPUT_SHAPE, BATCH_SIZE)
-    print("Successfully created approximation kernel")
-    
-    # Create the function substitution handler
-    func_sub = FuncSubstitute(
-        exact_module=exact_module,
-        approx_kernel=FuncSubstitute.load_mlir_from_file("output.mlir"),
-        input_shape=FEATURES_SHAPE,
-        batch_size=BATCH_SIZE
-    )
-    
-    func_sub.test_comparison = test_comparison.__get__(func_sub)
-    
-    func_sub.test_comparison(
-        x_test, y_test, num_samples=10
-    )
-    
     
 
 if __name__ == "__main__":

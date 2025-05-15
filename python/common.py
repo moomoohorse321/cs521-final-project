@@ -16,6 +16,19 @@ FEATURES_SHAPE = [NUM_ROWS, NUM_COLS, 1]  # Single image shape (without batch)
 parent_dir_path = os.path.dirname(os.path.abspath(__file__))
 
 
+# Create a CNN model for MNIST digit recognition (this is our "exact" model)
+def create_mnist_model():
+    model = tf.keras.Sequential([
+        tf.keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=FEATURES_SHAPE),
+        tf.keras.layers.MaxPooling2D((2, 2)),
+        tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),
+        tf.keras.layers.MaxPooling2D((2, 2)),
+        tf.keras.layers.Flatten(),
+        tf.keras.layers.Dense(512, activation='relu'),
+        tf.keras.layers.Dense(NUM_CLASSES, activation='softmax')
+    ])
+    return model
+
 def load_data():
     """Load MNIST dataset."""
     (x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
