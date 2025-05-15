@@ -20,6 +20,8 @@ INPUT_SHAPE = [1, NUM_ROWS, NUM_COLS, 1]  # Static shape with batch size of 1
 OUTPUT_SHAPE = [NUM_CLASSES]  # Static shape for output (batch size of 1)
 FEATURES_SHAPE = [NUM_ROWS, NUM_COLS, 1]  # Single image shape (without batch)
 
+IMG_DIR = "../imgs/verification/"
+
 # Create a CNN model for MNIST digit recognition (this is our "exact" model)
 def create_mnist_model():
     model = tf.keras.Sequential([
@@ -140,6 +142,10 @@ def init_mlir_files():
 
 if __name__ == "__main__":
     print("-------------------------------------------------")
+    # Declare and create the directory for saving images
+    if not os.path.exists(IMG_DIR):
+        os.makedirs(IMG_DIR)
+
     init_mlir_files()
-    test_load()
+    test_load(img_dir=IMG_DIR)
     print("-------------------------------------------------")

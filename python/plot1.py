@@ -1,3 +1,4 @@
+import os
 import iree.compiler.tf
 import iree.runtime
 import tensorflow as tf
@@ -19,7 +20,7 @@ INPUT_SHAPE = [1, NUM_ROWS, NUM_COLS, 1]  # Static shape with batch size of 1
 OUTPUT_SHAPE = [NUM_CLASSES]  # Static shape for output (batch size of 1)
 FEATURES_SHAPE = [NUM_ROWS, NUM_COLS, 1]  # Single image shape (without batch)
 
-
+IMG_DIR = "../imgs/plot1/"
 
 def test_comparison_modified(self, test_images, test_labels, num_samples_to_plot=0, use_mlir_approx=False, show_sample_plots=False):
     """
@@ -73,7 +74,7 @@ def test_comparison_modified(self, test_images, test_labels, num_samples_to_plot
             plt.title(f"Approx: {approx_pred}" + (" ✓" if approx_pred == true_label else " ✗"))
         
         plt.tight_layout()
-        plt.savefig("figure_sample_comparison.png")
+        plt.savefig(IMG_DIR + "figure_sample_comparison.png")
         plt.show()
         
         if num_samples_to_plot > 0:
@@ -173,7 +174,7 @@ def run_insight1_experiments():
     
     # Get exact_accuracy_baseline. The second value (approx_acc) is from an untrained kernel, so ignore.
     exact_accuracy_baseline, _, _ = temp_func_sub_for_exact.test_comparison(
-        x_test, y_test, num_samples_to_plot=0, use_mlir_approx=False, show_sample_plots=False
+        x_test, y_test, IMG_DIR, num_samples_to_plot=0, use_mlir_approx=False, show_sample_plots=False
     )
     print(f"Baseline Exact Model Accuracy (full test set): {exact_accuracy_baseline:.4f}")
     if exact_accuracy_baseline == 0:
@@ -219,7 +220,7 @@ def run_insight1_experiments():
         # If it returns performance as a third value, adjust unpacking: _exact_acc, approx_acc, _perf = ...
         # Ensure x_test, y_test are defined
         _exact_acc, approx_acc, _ = func_sub_exp1.test_comparison(
-            x_test, y_test, num_samples_to_plot=0, use_mlir_approx=False, show_sample_plots=False
+            x_test, y_test, IMG_DIR, num_samples_to_plot=0, use_mlir_approx=False, show_sample_plots=False
         )
         
         # Ensure exact_accuracy_baseline is a non-zero value
@@ -263,9 +264,9 @@ def run_insight1_experiments():
     ax2.legend(lines + lines2, labels + labels2, loc='center right') # Adjust location as needed, e.g., 'best', 'upper left'
 
     fig.tight_layout() # Adjust layout to prevent labels from overlapping
-    plt.savefig("plot_accuracy_drop_and_training_time_vs_samples.png")
+    plt.savefig(IMG_DIR + "plot_accuracy_drop_and_training_time_vs_samples.png")
     plt.show()
-    print("Plot for Experiment 1 saved as plot_accuracy_drop_and_training_time_vs_samples.png")
+    print("Plot for Experiment 1 saved as  ", IMG_DIR, "plot_accuracy_drop_and_training_time_vs_samples.png")
 
     # --- Experiment 2: Tune number of epochs ---
     print("\n--- Starting Experiment 2: Tuning Number of Epochs ---")
@@ -288,7 +289,7 @@ def run_insight1_experiments():
         
         func_sub_exp2.test_comparison = test_comparison_modified.__get__(func_sub_exp2)
         _exact_acc, approx_acc, _ = func_sub_exp2.test_comparison(
-            x_test, y_test, num_samples_to_plot=0, use_mlir_approx=False, show_sample_plots=False
+            x_test, y_test, IMG_DIR, num_samples_to_plot=0, use_mlir_approx=False, show_sample_plots=False
         )
         
         accuracy_drop = ((exact_accuracy_baseline - approx_acc) / exact_accuracy_baseline) * 100
@@ -302,9 +303,12 @@ def run_insight1_experiments():
     plt.xlabel('Number of Epochs')
     plt.ylabel('Accuracy Drop (%) [(Exact - Approx) / Exact * 100]')
     plt.grid(True)
-    plt.savefig("plot_accuracy_drop_vs_epochs.png")
-    print("Plot for Experiment 2 saved as plot_accuracy_drop_vs_epochs.png")
+    plt.savefig(IMG_DIR + "plot_accuracy_drop_vs_epochs.png")
+    print("Plot for Experiment 2 saved as ", IMG_DIR, "plot_accuracy_drop_vs_epochs.png")
 
 
 if __name__ == "__main__":
+    # Declare and create the directory for saving images
+    if not os.path.exists(IMG_DIR):
+        os.makedirs(IMG_DIR)
     run_insight1_experiments()

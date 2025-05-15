@@ -19,6 +19,7 @@ INPUT_SHAPE = [1, NUM_ROWS, NUM_COLS, 1]  # Static shape with batch size of 1
 OUTPUT_SHAPE = [NUM_CLASSES]  # Static shape for output (batch size of 1)
 FEATURES_SHAPE = [NUM_ROWS, NUM_COLS, 1]  # Single image shape (without batch)
 
+IMG_DIR = "../imgs/plot2/"
 
 def post_train_model(model, data, epochs=5):
     """Train the trainable model on MNIST data with real-time line updates."""
@@ -206,9 +207,9 @@ def run_post_training_and_plot(exact_model_module, approx_model_module,
 
     plt.title('Post-Training: Normalized Avg. Loss and Avg. Time per Epoch')
     fig.tight_layout()
-    plt.savefig("plot_post_training_normalized_loss_time_insight2.png")
+    plt.savefig(IMG_DIR + "plot_post_training_normalized_loss_time_insight2.png")
     plt.show()
-    print("Plot for Insight 2 (post-training normalized loss and time) saved as plot_post_training_normalized_loss_time_insight2.png")
+    print("Plot for Insight 2 (post-training normalized loss and time) saved as  ", IMG_DIR, "plot_post_training_normalized_loss_time_insight2.png")
 
 
 def run_insight2_experiment():
@@ -295,4 +296,8 @@ def run_insight2_experiment():
     
 
 if __name__ == "__main__":
+    # Declare and create the directory for saving images
+    if not os.path.exists(IMG_DIR):
+        os.makedirs(IMG_DIR)
+
     run_insight2_experiment()
