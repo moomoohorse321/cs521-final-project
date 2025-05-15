@@ -216,15 +216,15 @@ def test():
     exact_module_path = "mnist_exact_model"
     (x_train, y_train, y_train_onehot), (x_test, y_test, y_test_onehot) = load_data()
     
-    # # Create and train the exact MNIST module
-    # exact_module = create_mnist_module(BATCH_SIZE)
-    # print("Training the exact model...")
-    # exact_module = train_exact_module(exact_module, (x_train, y_train, y_train_onehot), epochs=5)
-    # print("Exact model training complete.")
+    # Create and train the exact MNIST module
+    exact_module = create_mnist_module(BATCH_SIZE)
+    print("Training the exact model...")
+    exact_module = train_exact_module(exact_module, (x_train, y_train, y_train_onehot), epochs=5)
+    print("Exact model training complete.")
     
-    # # # save it to .pth
-    # tf.saved_model.save(exact_module, exact_module_path)
-    # print(f"Exact model saved to {exact_module_path}")
+    # # save it to .pth
+    tf.saved_model.save(exact_module, exact_module_path)
+    print(f"Exact model saved to {exact_module_path}")
     
     # load it back
     exact_module = tf.saved_model.load(exact_module_path)
