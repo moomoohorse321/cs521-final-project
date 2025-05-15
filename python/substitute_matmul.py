@@ -47,7 +47,7 @@ def compile_exact_matmul():
     module = create_matmul_module()
 
     temp_save_path = "matmul_module"
-    mlir_path = "mlirbs_temp/matmul_module.mlirbc"
+    flatbuffer_path = "mlirbs_temp/matmul_module.mlirbc"
 
 
     print("Saving module to SavedModel...")
@@ -55,75 +55,48 @@ def compile_exact_matmul():
 
     # TODO: without saving and loading like this, get the error
     # AttributeError: '_SignatureMap' object has no attribute 'name'
-    mlir_bc = iree.compiler.tf.compile_saved_model(
+    flatbuffer = iree.compiler.tf.compile_saved_model(
         temp_save_path,
         target_backends=["llvm-cpu"],
         input_type="savedmodel",
-        import_only=True
+        import_only=True  
+
     )
     print("Compiled og matmul module.")
     shutil.rmtree(temp_save_path)
 
-    with open(mlir_path, "wb") as f:
-        f.write(mlir_bc)
-    print(f"Wrote MLIR bytecode to {mlir_path}")
+    with open(flatbuffer_path, "wb") as f:
+        f.write(flatbuffer)
+    print(f"Wrote MLIR bytecode to {flatbuffer_path}")
 
-    
     # return mlir_bc
-    return mlir_path
+    return flatbuffer_path
 
 
-
-# def load_and_run_matmul(mlir_bc):
-#     # flatbuffer_blob = compile_str(mlir_bc, target_backends=["llvm-cpu"], input_type="stablehlo")
-#     # print("Flatbuffer blob:")
-#     # print(flatbuffer_blob)
-#     print(mlir_bc)
-
-#     config = ireert.Config("local-task")
-#     ctx = ireert.SystemContext(config=config)
-#     vm_module = ireert.VmModule.from_flatbuffer(ireert.VmInstance(config), mlir_bc)
-#     ctx.add_vm_module(vm_module)
-
-    
-#     result = ctx.modules.module.basic_matmul(SAMPLE_LHS, SAMPLE_RHS)
-
-#     result_np = result.to_host()
-#     return result_np
-
-def load_and_run_matmul_from_file(mlir_path):
-    # Read bytecode from file
-    with open(mlir_path, "rb") as f:
-        bytecode = f.read()
-    
-    # Create VM instance and context
-    vm_instance = ireert.VmInstance()
+def load_and_run_matmul_from_file(flatbuffer_path):
+    # 3. Load the compiled module
     config = ireert.Config("local-task")
     context = ireert.SystemContext(config=config)
     
-    # Load the compiled module from the bytecode
-    vm_module = ireert.VmModule.from_flatbuffer(vm_instance, bytecode)
+    with open(flatbuffer_path, "rb") as f:
+        flatbuffer_content = f.read()
+    
+    vm_module = ireert.VmModule.from_flatbuffer(context.instance, flatbuffer_content)
     context.add_vm_module(vm_module)
+    print("✓ Loaded compiled module into IREE runtime")
     
-    # Call the function directly through the module namespace
-    result = context.modules.module.basic_matmul(SAMPLE_LHS, SAMPLE_RHS)
-    
-    # Convert result back to numpy (if needed)
-    if hasattr(result, 'to_host'):
-        result_np = result.to_host()
-    else:
-        result_np = result  # It might already be a numpy array
-    
-    return result_np
-
+    # 4. Execute the function
+    iree_result = context.modules.module.basic_matmul(SAMPLE_LHS, SAMPLE_RHS)
+    print("✓ Successfully executed the compiled function")
+    return iree_result
 
 if __name__ == "__main__":
     print("-------------------------------------------------")
-    mlir_path = compile_exact_matmul()
+    flatbuffer_path = compile_exact_matmul()
     # mlir_bc = compile_exact_matmul()
 
     # result = load_and_run_matmul(mlir_bc)
-    result = load_and_run_matmul_from_file(mlir_path)
+    result = load_and_run_matmul_from_file(flatbuffer_path)
     print("Result of matmul:")
     print(result)
 
