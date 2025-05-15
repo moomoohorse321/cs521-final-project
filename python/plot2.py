@@ -9,6 +9,8 @@ from iree.compiler import compile_str
 from substitute import FuncSubstitute, get_approx_kernel
 import time, os
 
+from common import load_data
+
 # Configuration for our MNIST model
 NUM_CLASSES = 10
 NUM_ROWS, NUM_COLS = 28, 28
@@ -16,24 +18,6 @@ BATCH_SIZE = 32
 INPUT_SHAPE = [1, NUM_ROWS, NUM_COLS, 1]  # Static shape with batch size of 1
 OUTPUT_SHAPE = [NUM_CLASSES]  # Static shape for output (batch size of 1)
 FEATURES_SHAPE = [NUM_ROWS, NUM_COLS, 1]  # Single image shape (without batch)
-
-def load_data():
-    """Load MNIST dataset."""
-    (x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
-
-    # Reshape into grayscale images
-    x_train = np.reshape(x_train, (-1, NUM_ROWS, NUM_COLS, 1))
-    x_test = np.reshape(x_test, (-1, NUM_ROWS, NUM_COLS, 1))
-
-    # Rescale pixel values to [0, 1]
-    x_train = x_train.astype(np.float32) / 255
-    x_test = x_test.astype(np.float32) / 255
-
-    # Convert labels to one-hot encoding for the classifier
-    y_train_onehot = tf.keras.utils.to_categorical(y_train, NUM_CLASSES)
-    y_test_onehot = tf.keras.utils.to_categorical(y_test, NUM_CLASSES)
-
-    return (x_train, y_train, y_train_onehot), (x_test, y_test, y_test_onehot)
 
 # Create a CNN model for MNIST digit recognition (this is our "exact" model)
 def create_mnist_model():
