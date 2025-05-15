@@ -30,11 +30,11 @@ The binaries (`bin/replace`, `bin/merge`, `bin/approx-opt`) are pre-built (for x
 
 ### I want to build from the source
 
-Okay. For `bin/replace` and `bin/merge`, you can just go to bin and make them (because their source files are in them).
+Okay. For `bin/replace` and `bin/merge`, you can just go to `bin` directory and make them (because their source files are in them).
 
 For `bin/approx-opt`, you need to build it from the source using this link https://github.com/moomoohorse321/approxMLIR. 
 
-You must checkout to the `llvm2024` branch and follow the instruction in the `README.md` to build it.
+You must checkout to the `llvm2024` branch and follow the instruction in the `README.md` to build it and then copy the `approx-opt` binary to `bin` directory.
 
 All of these steps are only necessary if you want to build the binaries from the source.
 
