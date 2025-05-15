@@ -13,7 +13,7 @@ OUTPUT_SHAPE = [NUM_CLASSES]  # Static shape for output (batch size of 1)
 FEATURES_SHAPE = [NUM_ROWS, NUM_COLS, 1]  # Single image shape (without batch)
 
 
-parent_dir_path = os.path.dirname(os.path.abspath(__file__))
+proj_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 # Create a CNN model for MNIST digit recognition (this is our "exact" model)
@@ -214,7 +214,7 @@ def test_comparison(self, test_images, test_labels, num_samples=10, use_mlir_app
     print(f"Full Test Set - Approximate Model Accuracy: {approx_correct / len(test_images):.4f}")
 
 
-def test_load(load_mlir_path = os.path.join(parent_dir_path, "../bin", "output.mlir")):
+def test_load(load_mlir_path = os.path.join(proj_dir, "bin", "output.mlir")):
     (x_train, y_train, y_train_onehot), (x_test, y_test, y_test_onehot) = load_data()
     
     exact_module_path = "mnist_exact_model"

@@ -8,3 +8,4 @@ python/*.png
 .venv/
 venv/
 bin/*.mlir
+python/*.temp
