@@ -4,7 +4,13 @@ The code we wrote for this course project are distributed in `python` directory 
 
 It's really hard implementation especially writing so much code in one month (look at the approxMLIR directory and you might understand why).
 
-## Building the testing suite
+## Installation
+
+### Using pre-built binaries
+
+* This can  only work if you have a x86_64 linux machine (I used WSL 22.04). It hasn't been tested on any other platforms.
+
+
 You should first install `IREE` in your environment.
 
 ```bash
