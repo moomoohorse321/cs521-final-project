@@ -278,7 +278,7 @@ def test():
 
 parent_dir_path = os.path.dirname(os.path.abspath(__file__))
 
-def test_load(load_mlir_path = os.path.join(parent_dir_path, "bin", "output.mlir")):
+def test_load(load_mlir_path = os.path.join(parent_dir_path, "../bin", "output.mlir")):
     (x_train, y_train, y_train_onehot), (x_test, y_test, y_test_onehot) = load_data()
     
     exact_module_path = "mnist_exact_model"
@@ -294,7 +294,7 @@ def test_load(load_mlir_path = os.path.join(parent_dir_path, "bin", "output.mlir
     # Create the function substitution handler
     func_sub = FuncSubstitute(
         exact_module=exact_module,
-        approx_kernel=FuncSubstitute.load_mlir_from_file("output.mlir"),
+        approx_kernel=FuncSubstitute.load_mlir_from_file(load_mlir_path),
         input_shape=FEATURES_SHAPE,
         batch_size=BATCH_SIZE
     )
@@ -308,5 +308,5 @@ def test_load(load_mlir_path = os.path.join(parent_dir_path, "bin", "output.mlir
     
 
 if __name__ == "__main__":
-    # test_load()
-    test()
+    test_load()
+    # test()
