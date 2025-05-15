@@ -4,7 +4,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from substitute import FuncSubstitute, get_approx_kernel
 
-# TODO sort correctly to not be copied w common and other scripts# Configuration for our MNIST model
 NUM_CLASSES = 10
 NUM_ROWS, NUM_COLS = 28, 28
 BATCH_SIZE = 32

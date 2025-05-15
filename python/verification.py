@@ -10,7 +10,7 @@ from substitute import FuncSubstitute, get_approx_kernel
 from approxMLIR import ToolBox
 import os
 
-from common import load_data, test_load, test_comparison, train_exact_module
+from common import load_data, test_load, train_exact_module, test_comparison
 
 # Configuration for our MNIST model
 NUM_CLASSES = 10
@@ -69,6 +69,7 @@ def create_mnist_module(batch_size=BATCH_SIZE):
             return loss
         
     return MNISTModule()
+
 
 def init_mlir_files():
     # Load MNIST data
