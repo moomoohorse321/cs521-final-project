@@ -1,6 +1,8 @@
 # approxMLIR-IREE testing suite
 
+The code we wrote for this course project are distributed in `python` directory and in the `https://github.com/moomoohorse321/approxMLIR` repository.
 
+It's really hard implementation especially writing so much code in one month (look at the approxMLIR directory and you might understand why).
 
 ## Building the testing suite
 You should first install `IREE` in your environment.
