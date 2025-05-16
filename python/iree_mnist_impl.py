@@ -1,12 +1,10 @@
-import iree.compiler.tf
-import iree.runtime
-from matplotlib import pyplot as plt
 import numpy as np
 import tensorflow as tf
 
 NUM_CLASSES = 10
 NUM_ROWS, NUM_COLS = 28, 28
 BATCH_SIZE = 32
+
 
 def load_data():
 
