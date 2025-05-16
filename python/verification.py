@@ -81,7 +81,7 @@ def init_mlir_files():
     # Create and train the exact MNIST module
     exact_module = create_mnist_module(BATCH_SIZE)
     print("Training the exact model...")
-    exact_module = train_exact_module(exact_module, (x_train, y_train, y_train_onehot), epochs=1) # TODO put back to 5
+    exact_module = train_exact_module(exact_module, (x_train, y_train, y_train_onehot), epochs=5) 
     print("Exact model training complete.")
     
     # # save it to .pth
@@ -111,7 +111,7 @@ def init_mlir_files():
     
     # Training parameters
     num_samples = 5000  # Number of samples to use for training the approximation
-    epochs = 1        # Number of training epochs # TODO put back to 50
+    epochs = 50        # Number of training epochs 
     
     # Train the approximate kernel
     print(f"Training approximation kernel with up to {num_samples} samples for {epochs} epochs...")
