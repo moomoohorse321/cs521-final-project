@@ -1,13 +1,7 @@
 *__pycache__
-.venv/
 
-python/mnist_exact_model/
-python/*.mlir
-python/*.mlir.tmp
-python/*.mlirbc
 imgs/
+out/
 
 .venv/
 venv/
-bin/*.mlir
-python/*.temp

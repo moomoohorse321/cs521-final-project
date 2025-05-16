@@ -7,6 +7,8 @@ from iree.tf.support import module_utils
 from iree import runtime as ireert
 from iree.compiler import compile_str
 
+OUT_DIR = "../out/"
+
 ################################
 # Function Substitution Library
 ################################
@@ -246,7 +248,7 @@ class FuncSubstitute:
         model = self.impl.train_model(train_data, train_labels, epochs)
         return model
     
-    def compile_approx(self, export_dir="../bin", exported_names = ["approx_predict", "approx_learn"]):
+    def compile_approx(self, export_dir=OUT_DIR, exported_names = ["approx_predict", "approx_learn"]):
         """
         Compile the approximate kernel to MLIR and save it.
         
@@ -272,7 +274,7 @@ class FuncSubstitute:
         
         return mlir_path
 
-    def compile_exact(self, export_dir="../bin", exported_names = ["predict", "learn"]):
+    def compile_exact(self, export_dir=OUT_DIR, exported_names = ["predict", "learn"]):
         """
         Compile the exact module to MLIR and save it.
         

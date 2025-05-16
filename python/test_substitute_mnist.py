@@ -8,7 +8,7 @@ from iree import runtime as ireert
 from iree.compiler import compile_str
 from substitute import FuncSubstitute, get_approx_kernel
 
-from common import load_data, test_load, create_mnist_module, train_exact_module, test_comparison
+from common import load_data, test_load, create_mnist_module, train_exact_module, test_comparison, OUT_DIR
 
 # Configuration for our MNIST model
 NUM_CLASSES = 10
@@ -21,7 +21,7 @@ FEATURES_SHAPE = [NUM_ROWS, NUM_COLS, 1]  # Single image shape (without batch)
 
 def test():
     # Load MNIST data
-    exact_module_path = BIN_DIR + "mnist_exact_model"
+    exact_module_path = OUT_DIR + "mnist_exact_model"
     (x_train, y_train, y_train_onehot), (x_test, y_test, y_test_onehot) = load_data()
     
     # # Create and train the exact MNIST module

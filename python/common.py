@@ -11,7 +11,7 @@ INPUT_SHAPE = [1, NUM_ROWS, NUM_COLS, 1]  # Static shape with batch size of 1
 OUTPUT_SHAPE = [NUM_CLASSES]  # Static shape for output (batch size of 1)
 FEATURES_SHAPE = [NUM_ROWS, NUM_COLS, 1]  # Single image shape (without batch)
 
-BIN_DIR = "../bin/"
+OUT_DIR = "../out/"
 proj_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
@@ -213,13 +213,13 @@ def test_comparison(self, test_images, test_labels, img_dir = "", num_samples=10
     print(f"Full Test Set - Approximate Model Accuracy: {approx_correct / len(test_images):.4f}")
 
 
-def test_load(img_dir = "", load_mlir_path = os.path.join(proj_dir, "bin", "output.mlir")):
+def test_load(img_dir = "", load_mlir_path = OUT_DIR + "output.mlir"):
     print("test_load load_mlir_path: ", load_mlir_path)
     print("load_mlir_path: ", load_mlir_path)
 
     (x_train, y_train, y_train_onehot), (x_test, y_test, y_test_onehot) = load_data()
     
-    exact_module_path = BIN_DIR + "mnist_exact_model"
+    exact_module_path = OUT_DIR + "mnist_exact_model"
     # load it back
     exact_module = tf.saved_model.load(exact_module_path)
     print("Exact model loaded from saved file.")
@@ -246,7 +246,7 @@ def test_load(img_dir = "", load_mlir_path = os.path.join(proj_dir, "bin", "outp
 
 def test():
     # Load MNIST data
-    exact_module_path = BIN_DIR + "mnist_exact_model"
+    exact_module_path = OUT_DIR + "mnist_exact_model"
     (x_train, y_train, y_train_onehot), (x_test, y_test, y_test_onehot) = load_data()
     
     # # Create and train the exact MNIST module

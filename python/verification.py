@@ -10,7 +10,7 @@ from substitute import FuncSubstitute, get_approx_kernel
 from approxMLIR import ToolBox
 import os
 
-from common import load_data, test_load, test_comparison, train_exact_module, proj_dir
+from common import load_data, test_load, test_comparison, train_exact_module, proj_dir, OUT_DIR
 
 # Configuration for our MNIST model
 NUM_CLASSES = 10
@@ -21,7 +21,6 @@ OUTPUT_SHAPE = [NUM_CLASSES]  # Static shape for output (batch size of 1)
 FEATURES_SHAPE = [NUM_ROWS, NUM_COLS, 1]  # Single image shape (without batch)
 
 IMG_DIR = "../imgs/verification/"
-BIN_DIR = "../bin/"
 
 # Create a CNN model for MNIST digit recognition (this is our "exact" model)
 def create_mnist_model():
@@ -76,13 +75,13 @@ def create_mnist_module(batch_size=BATCH_SIZE):
 
 def init_mlir_files():
     # Load MNIST data
-    exact_module_path = BIN_DIR + "mnist_exact_model"
+    exact_module_path = OUT_DIR + "mnist_exact_model"
     (x_train, y_train, y_train_onehot), (x_test, y_test, y_test_onehot) = load_data()
     
     # Create and train the exact MNIST module
     exact_module = create_mnist_module(BATCH_SIZE)
     print("Training the exact model...")
-    exact_module = train_exact_module(exact_module, (x_train, y_train, y_train_onehot), epochs=5)
+    exact_module = train_exact_module(exact_module, (x_train, y_train, y_train_onehot), epochs=1) # TODO put back to 5
     print("Exact model training complete.")
     
     # # save it to .pth
@@ -120,54 +119,30 @@ def init_mlir_files():
     func_sub.train_approx(use_provided=True, user_data=x_train[:num_samples], epochs=epochs)
     print("Approximation training complete.")
     
-    # # Compile the approximate kernel to MLIR
-    # mlir_path2 = func_sub.compile_approx()
-    
-    # replace_exec_path = "../bin/replace"
-    # merge_exec_path = "../bin/merge"
-    # opt_exec_path = "../bin/approxMLIR-opt"
-    # mlir_path1 = "../bin/approx.mlir"
-    # mlir_path2 = "../bin/exact.mlir"
-    # output_path = "../bin/merged.mlir"
-    # # mlir path is *.mlirbc
-    # os.system(f"iree-ir-tool copy {mlir_path1}bc -o {mlir_path1}")
-    # os.system(f"iree-ir-tool copy {mlir_path2}bc -o {mlir_path2}")
-    # toolbox = ToolBox(replace_exec_path, merge_exec_path, opt_exec_path)
-    # toolbox.write2file_auxiliary_mlir_str("./auxiliary.mlir")
-    # toolbox.link_mlir_modules("./auxiliary.mlir", mlir_path1, "./ext.mlir", keep_temp_files=True)
-    # toolbox.link_mlir_modules("./ext.mlir", mlir_path2, output_path, keep_temp_files=True)
-    # toolbox.optimize_mlir(output_path, "output.mlir")
-    
-    # output_path = os.path.join(proj_dir, "bin", "output.mlir")
-    # os.system(f"mv output.mlir {output_path}")
-    
-    # # os.system(f"mv output.mlir {output_path}")
-    # print("Successfully merged and optimized MLIR files to ", output_path)
-
     # Compile the approximate kernel to MLIR
+    mlir_path2 = func_sub.compile_approx()
+    
     replace_exec_path = "../bin/replace"
     merge_exec_path = "../bin/merge"
     opt_exec_path = "../bin/approxMLIR-opt"
-    mlir_path1 = os.path.join(BIN_DIR, "approx.mlir")
-    mlir_path2 = os.path.join(BIN_DIR, "exact.mlir")
-    output_path = os.path.join(BIN_DIR, "merged.mlir")
-    
+
+    mlir_path1 = OUT_DIR + "approx.mlir"
+    mlir_path2 = OUT_DIR + "exact.mlir"
+    output_path = OUT_DIR + "merged.mlir"
+    auziliary_path = OUT_DIR + "auxiliary.mlir"
+    ext_path = OUT_DIR + "ext.mlir"
+
+    # mlir path is *.mlirbc
     os.system(f"iree-ir-tool copy {mlir_path1}bc -o {mlir_path1}")
     os.system(f"iree-ir-tool copy {mlir_path2}bc -o {mlir_path2}")
-    
     toolbox = ToolBox(replace_exec_path, merge_exec_path, opt_exec_path)
-    auxiliary_mlir_path = os.path.join(BIN_DIR, "auxiliary.mlir")
-    ext_mlir_path = os.path.join(BIN_DIR, "ext.mlir")
-    
-    toolbox.write2file_auxiliary_mlir_str(auxiliary_mlir_path)
-    toolbox.link_mlir_modules(auxiliary_mlir_path, mlir_path1, ext_mlir_path, keep_temp_files=True)
-    toolbox.link_mlir_modules(ext_mlir_path, mlir_path2, output_path, keep_temp_files=True)
+    toolbox.write2file_auxiliary_mlir_str(auziliary_path)
+    toolbox.link_mlir_modules(auziliary_path, mlir_path1, ext_path, keep_temp_files=True)
+    toolbox.link_mlir_modules(ext_path, mlir_path2, output_path, keep_temp_files=True)
     toolbox.optimize_mlir(output_path, "output.mlir")
     
-    final_output_path = os.path.join(proj_dir, "bin", "output.mlir")
-    os.system(f"mv output.mlir' {final_output_path}")
-    
-    print("Successfully merged and optimized MLIR files to ", final_output_path)
+    os.system(f"mv output.mlir {OUT_DIR + 'output.mlir'}")
+    print("Successfully merged and optimized MLIR files to ", {OUT_DIR + 'output.mlir'})
     
     
 
