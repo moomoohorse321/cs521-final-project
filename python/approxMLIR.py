@@ -8,6 +8,7 @@ from iree import runtime as ireert
 from iree.compiler import compile_str
 import os
 
+BIN_DIR = "../bin/"
 
 class ToolBox:
     def __init__(self, replace_exec_path, merge_exec_path, opt_exec_path):
@@ -64,13 +65,13 @@ if __name__ == "__main__":
     replace_exec_path = "../../external-tools/approx/replace"
     merge_exec_path = "../../external-tools/approx/merge"
     opt_exec_path = "../../build/bin/approxMLIR-opt"
-    mlir_path1 = "./approx.mlir"
-    mlir_path2 = "./exact.mlir"
-    output_path = "./merged.mlir"
+    mlir_path1 = BIN_DIR + "approx.mlir"
+    mlir_path2 = BIN_DIR + "exact.mlir"
+    output_path = BIN_DIR + "merged.mlir"
     toolbox = ToolBox(replace_exec_path, merge_exec_path, opt_exec_path)
-    toolbox.write2file_auxiliary_mlir_str("./auxiliary.mlir")
-    toolbox.link_mlir_modules("./auxiliary.mlir", mlir_path1, "./ext.mlir", keep_temp_files=True)
-    toolbox.link_mlir_modules("./ext.mlir", mlir_path2, output_path, keep_temp_files=True)
-    toolbox.optimize_mlir(output_path, "./output.mlir")
+    toolbox.write2file_auxiliary_mlir_str(BIN_DIR + "auxiliary.mlir")
+    toolbox.link_mlir_modules(BIN_DIR + "auxiliary.mlir", mlir_path1, BIN_DIR + "ext.mlir", keep_temp_files=True)
+    toolbox.link_mlir_modules(BIN_DIR + "ext.mlir", mlir_path2, output_path, keep_temp_files=True)
+    toolbox.optimize_mlir(output_path, BIN_DIR + "output.mlir")
     
     

@@ -219,7 +219,7 @@ def run_insight2_experiment():
     (x_train, y_train, y_train_onehot), (_x_test, _y_test, _y_test_onehot) = load_data()
 
     # 1. Prepare the Exact Model (partially pre-trained for 1 epoch)
-    exact_module_path_insight2 = "mnist_exact_for_posttraining_insight2"
+    exact_module_path_insight2 = BIN_DIR + "mnist_exact_for_posttraining_insight2"
     try:
         exact_model_to_post_train = tf.saved_model.load(exact_module_path_insight2)
         print(f"Loaded pre-trained exact model from {exact_module_path_insight2}")

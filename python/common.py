@@ -11,7 +11,7 @@ INPUT_SHAPE = [1, NUM_ROWS, NUM_COLS, 1]  # Static shape with batch size of 1
 OUTPUT_SHAPE = [NUM_CLASSES]  # Static shape for output (batch size of 1)
 FEATURES_SHAPE = [NUM_ROWS, NUM_COLS, 1]  # Single image shape (without batch)
 
-
+BIN_DIR = "../bin/"
 proj_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
@@ -116,7 +116,7 @@ def load_data():
     return (x_train, y_train, y_train_onehot), (x_test, y_test, y_test_onehot)
 
 
-def test_comparison(self, test_images, test_labels, num_samples=10, use_mlir_approx=True):
+def test_comparison(self, test_images, test_labels, img_dir = "", num_samples=10, use_mlir_approx=True):
     """
     Compare the exact and approximate models on test images.
     
@@ -175,7 +175,7 @@ def test_comparison(self, test_images, test_labels, num_samples=10, use_mlir_app
         plt.title(f"Approx: {approx_pred}" + (" ✓" if approx_pred == true_label else " ✗"))
     
     plt.tight_layout()
-    plt.savefig("figure1.png")
+    plt.savefig(img_dir + "figure1.png")
     plt.show()
     
     # Print results
@@ -213,10 +213,13 @@ def test_comparison(self, test_images, test_labels, num_samples=10, use_mlir_app
     print(f"Full Test Set - Approximate Model Accuracy: {approx_correct / len(test_images):.4f}")
 
 
-def test_load(load_mlir_path = os.path.join(proj_dir, "bin", "output.mlir")):
+def test_load(img_dir = "", load_mlir_path = os.path.join(proj_dir, "bin", "output.mlir")):
+    print("test_load load_mlir_path: ", load_mlir_path)
+    print("load_mlir_path: ", load_mlir_path)
+
     (x_train, y_train, y_train_onehot), (x_test, y_test, y_test_onehot) = load_data()
     
-    exact_module_path = "mnist_exact_model"
+    exact_module_path = BIN_DIR + "mnist_exact_model"
     # load it back
     exact_module = tf.saved_model.load(exact_module_path)
     print("Exact model loaded from saved file.")
@@ -237,13 +240,13 @@ def test_load(load_mlir_path = os.path.join(proj_dir, "bin", "output.mlir")):
     func_sub.test_comparison = test_comparison.__get__(func_sub)
     
     func_sub.test_comparison(
-        x_test, y_test, num_samples=10
+        x_test, y_test,  img_dir, num_samples=10
     )
 
 
 def test():
     # Load MNIST data
-    exact_module_path = "mnist_exact_model"
+    exact_module_path = BIN_DIR + "mnist_exact_model"
     (x_train, y_train, y_train_onehot), (x_test, y_test, y_test_onehot) = load_data()
     
     # # Create and train the exact MNIST module

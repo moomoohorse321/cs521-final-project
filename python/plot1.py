@@ -145,7 +145,7 @@ def test_comparison_modified(self, test_images, test_labels, num_samples_to_plot
 def run_insight1_experiments():
     (x_train, y_train, y_train_onehot), (x_test, y_test, y_test_onehot) = load_data()
     
-    exact_module_path = "mnist_exact_model"
+    exact_module_path = BIN_DIR + "mnist_exact_model"
     try:
         exact_module = tf.saved_model.load(exact_module_path)
         print("Exact model loaded from saved file.")
