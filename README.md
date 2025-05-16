@@ -6,6 +6,14 @@ It's really hard implementation especially writing so much code in one month (lo
 
 ## Installation
 
+### Pull approxMLIR-opt
+`bin/approxMLIR-opt` is too large a file and required storage using Git LFS. To pull it:
+1. Ensure you have `git lfs` installed with `git lfs --version` (if not, `sudo apt install git-lfs`)
+2. `git lfs pull`
+3. Ensure file is present with `ls -lh bin/approxMLIR-opt`
+
+
+
 ### Using pre-built binaries
 
 * This can  only work if you have a x86_64 linux machine (I used WSL 22.04). It hasn't been tested on any other platforms.
