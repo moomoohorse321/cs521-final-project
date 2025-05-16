@@ -6,3 +6,8 @@ python/*.mlir
 python/*.mlir.tmp
 python/*.mlirbc
 imgs/
+
+.venv/
+venv/
+bin/*.mlir
+python/*.temp

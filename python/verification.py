@@ -10,7 +10,7 @@ from substitute import FuncSubstitute, get_approx_kernel
 from approxMLIR import ToolBox
 import os
 
-from common import load_data, test_load, train_exact_module, test_comparison
+from common import load_data, test_load, test_comparison, train_exact_module, proj_dir
 
 # Configuration for our MNIST model
 NUM_CLASSES = 10
@@ -137,6 +137,8 @@ def init_mlir_files():
     toolbox.link_mlir_modules("./ext.mlir", mlir_path2, output_path, keep_temp_files=True)
     toolbox.optimize_mlir(output_path, "output.mlir")
     
+    output_path = os.path.join(proj_dir, "bin", "output.mlir")
+    os.system(f"mv output.mlir {output_path}")
     
     
 
