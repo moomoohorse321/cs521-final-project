@@ -56,7 +56,7 @@ All of these steps are only necessary if you want to build the binaries from the
 
 ```bash
 cd python
-# run the first plot (Figure 6)
+# run the first plot (Figure 6) (warning: this takes several minutes to run)
 python3 verification.py
 # run the second plot (Figure 4)
 python3 plot1.py
