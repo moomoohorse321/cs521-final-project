@@ -4,7 +4,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 from substitute import FuncSubstitute, get_approx_kernel
 import time
-import os
 
 from common import (
     load_data,
