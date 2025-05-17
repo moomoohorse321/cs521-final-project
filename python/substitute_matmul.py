@@ -43,6 +43,24 @@ def create_matmul_module():
                         if i == 0 and j == 0:
                             tf.print(f"lhs[{i}, {k}] * rhs[{k}, {j}] = {lhs[i, k]} * {rhs[k, j]}")
             return res
+        
+        @tf.function(input_signature=[tf.TensorSpec(shape=(A, B), dtype=tf.float32),
+                                        tf.TensorSpec(shape=(B, C), dtype=tf.float32), 
+                                        tf.TensorSpec(shape=(), dtype=tf.int32)]) 
+        def approx_matmul(self, lhs, rhs, stride=1):
+            res = tf.zeros((A, C), dtype=tf.float32)
+
+            # using tensorflow automatic diff compatible operations
+            for i in range(A):
+                for j in range(C):
+                    for k in range(0, B, stride):
+                        indices = tf.constant([[i, j]])
+                        updates = tf.expand_dims(lhs[i, k] * rhs[k, j], 0)
+                        res = tf.tensor_scatter_nd_add(res, indices, updates)
+                        
+                        if i == 0 and j == 0:
+                            tf.print(f"lhs[{i}, {k}] * rhs[{k}, {j}] = {lhs[i, k]} * {rhs[k, j]}")
+            return res
 
     return MatMulModule()
 
@@ -59,11 +77,17 @@ if __name__ == "__main__":
     print("Loaded exact matmul module from saved file.")
 
     # Test the exact module
-    print("Testing exact matmul module...")
-    exact_result = exact_matmul_module.basic_matmul(SAMPLE_LHS, SAMPLE_RHS)
+    print("Testing approx matmul module...")
+    approx_res = exact_matmul_module.approx_matmul(SAMPLE_LHS, SAMPLE_RHS, 2)
     print("Exact matmul result:")
-    print(exact_result)
+    print(approx_res)
+
     expected_result = np.matmul(SAMPLE_LHS, SAMPLE_RHS)
     print("Expected result:")
     print(expected_result)
-    assert np.allclose(exact_result, expected_result), "Exact matmul result does not match expected result."
+
+    # Find mean square error
+    mse = np.mean((approx_res - expected_result) ** 2)
+    print("Mean square error:")
+    print(mse)
+    print("-------------------------------------------------")
