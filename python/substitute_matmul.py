@@ -32,76 +32,38 @@ def create_matmul_module():
         def basic_matmul(self, lhs, rhs):
             res = tf.zeros((A, C), dtype=tf.float32)
 
+            # using tensorflow automatic diff compatible operations
             for i in range(A):
                 for j in range(C):
                     for k in range(B):
-                        res += lhs[i, k] * rhs[k, j]
+                        indices = tf.constant([[i, j]])
+                        updates = tf.expand_dims(lhs[i, k] * rhs[k, j], 0)
+                        res = tf.tensor_scatter_nd_add(res, indices, updates)
+                        
                         if i == 0 and j == 0:
-                            print(f"lhs[{i}, {k}] * rhs[{k}, {j}] = {lhs[i, k]} * {rhs[k, j]}")
+                            tf.print(f"lhs[{i}, {k}] * rhs[{k}, {j}] = {lhs[i, k]} * {rhs[k, j]}")
             return res
 
     return MatMulModule()
 
-
-def compile_exact_matmul():
-    module = create_matmul_module()
-
-    temp_save_path = "matmul_module"
-    flatbuffer_path = "mlirbs_temp/matmul_module.mlirbc"
-
-
-    print("Saving module to SavedModel...")
-    tf.saved_model.save(module, temp_save_path)
-
-    # TODO: without saving and loading like this, get the error
-    # AttributeError: '_SignatureMap' object has no attribute 'name'
-    flatbuffer = iree.compiler.tf.compile_saved_model(
-        temp_save_path,
-        target_backends=["llvm-cpu"],
-        input_type="savedmodel",
-        import_only=True  
-
-    )
-    print("Compiled og matmul module.")
-    shutil.rmtree(temp_save_path)
-
-    with open(flatbuffer_path, "wb") as f:
-        f.write(flatbuffer)
-    print(f"Wrote MLIR bytecode to {flatbuffer_path}")
-
-    # return mlir_bc
-    return flatbuffer_path
-
-
-def load_and_run_matmul_from_file(flatbuffer_path):
-    # 3. Load the compiled module
-    config = ireert.Config("local-task")
-    context = ireert.SystemContext(config=config)
-    
-    with open(flatbuffer_path, "rb") as f:
-        flatbuffer_content = f.read()
-    
-    vm_module = ireert.VmModule.from_flatbuffer(context.instance, flatbuffer_content)
-    context.add_vm_module(vm_module)
-    print("✓ Loaded compiled module into IREE runtime")
-    
-    # 4. Execute the function
-    iree_result = context.modules.module.basic_matmul(SAMPLE_LHS, SAMPLE_RHS)
-    print("✓ Successfully executed the compiled function")
-    return iree_result
-
 if __name__ == "__main__":
     print("-------------------------------------------------")
-    flatbuffer_path = compile_exact_matmul()
-    # mlir_bc = compile_exact_matmul()
+    
+    exact_matmul_module = create_matmul_module()
 
-    # result = load_and_run_matmul(mlir_bc)
-    result = load_and_run_matmul_from_file(flatbuffer_path)
-    print("Result of matmul:")
-    print(result)
+    func_path = "mlirbs_temp/matmul_module"
+    tf.saved_model.save(exact_matmul_module, func_path)
+    print(f"Saved exact matmul module to {func_path}")
 
-    expected = tf.matmul(SAMPLE_LHS, SAMPLE_RHS).numpy()
+    exact_matmul_module = tf.saved_model.load(func_path)
+    print("Loaded exact matmul module from saved file.")
+
+    # Test the exact module
+    print("Testing exact matmul module...")
+    exact_result = exact_matmul_module.basic_matmul(SAMPLE_LHS, SAMPLE_RHS)
+    print("Exact matmul result:")
+    print(exact_result)
+    expected_result = np.matmul(SAMPLE_LHS, SAMPLE_RHS)
     print("Expected result:")
-    print(expected)
-    print("Difference:")
-    print(np.abs(result - expected).max())
+    print(expected_result)
+    assert np.allclose(exact_result, expected_result), "Exact matmul result does not match expected result."
