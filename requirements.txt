@@ -1,5 +1,7 @@
-iree-base-compiler==3.3.0
-iree-base-runtime==3.3.0
-iree-tools-tf==20250320.1206
-tensorflow[and-cuda] 
+iree_base_compiler==3.3.0
+iree_base_runtime==3.3.0
+iree_tools_tf==20250320.1206
+iree_turbine==3.3.0
 matplotlib
+numpy
+tensorflow[and-cuda]
