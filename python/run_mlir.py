@@ -11,9 +11,7 @@ module @arithmetic {
 """
 
 # Compile using the vmvx (reference) target:
-compiled_flatbuffer = ireec.tools.compile_str(
-    INPUT_MLIR,
-    target_backends=["vmvx"])
+compiled_flatbuffer = ireec.tools.compile_str(INPUT_MLIR, target_backends=["vmvx"])
 
 from iree import runtime as ireert
 import numpy as np
@@ -27,8 +25,8 @@ ctx.add_vm_module(vm_module)
 
 # Invoke the function and print the result.
 print("INVOKE simple_mul")
-arg0 = np.array([1., 2., 3., 4.], dtype=np.float32)
-arg1 = np.array([4., 5., 6., 7.], dtype=np.float32)
+arg0 = np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float32)
+arg1 = np.array([4.0, 5.0, 6.0, 7.0], dtype=np.float32)
 f = ctx.modules.arithmetic["simple_mul"]
 results = f(arg0, arg1).to_host()
 print("Results:", results)

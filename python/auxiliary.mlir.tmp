@@ -1,6 +1,0 @@
-
-            module {
-                "approxMLIR.util.annoatation.func_substitution"() <{from = "predict", to = "approx_predict"}> : () -> ()
-                "approxMLIR.util.annoatation.func_substitution"() <{from = "learn", to = "approx_learn"}> : () -> ()
-            }
-        
