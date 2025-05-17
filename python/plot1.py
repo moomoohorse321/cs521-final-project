@@ -27,6 +27,7 @@ def test_comparison_modified(
     self,
     test_images,
     test_labels,
+    IMG_DIR,
     num_samples_to_plot=0,
     use_mlir_approx=False,
     show_sample_plots=False,

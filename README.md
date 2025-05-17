@@ -25,6 +25,9 @@ It's really hard implementation especially writing so much code in one month (lo
 You should first install `IREE` in your environment.
 
 ```bash
+sudo apt install git-lfs
+git lfs install
+git lfs pull
 # create a venv
 python3 -m venv venv
 source venv/bin/activate
