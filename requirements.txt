@@ -4,4 +4,4 @@ iree_tools_tf==20250320.1206
 iree_turbine==3.3.0
 matplotlib
 numpy
-tensorflow==2.19.0
+tensorflow[and-cuda]

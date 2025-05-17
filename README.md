@@ -6,12 +6,15 @@ It's really hard implementation especially writing so much code in one month (lo
 
 ## Installation
 
+### System Requirements
+- Python 3.9–3.12
+- pip (version 19.0 or higher for Linux (requires manylinux2014 support) and Windows. pip version 20.3 or higher for macOS)
+
 ### Pull approxMLIR-opt
 `bin/approxMLIR-opt` is too large a file and required storage using Git LFS. To pull it:
 1. Ensure you have `git lfs` installed with `git lfs --version` (if not, `sudo apt install git-lfs`)
 2. `git lfs pull`
 3. Ensure file is present with `ls -lh bin/approxMLIR-opt`
-
 
 
 ### Using pre-built binaries
